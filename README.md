@@ -45,3 +45,30 @@ The **F1 Pit-Wall Telemetry Engine** is a decision support system (DSS) designed
 ---
 
 ## 🏗️ Architecture & Component Layout
+├── app.py              # Dark-mode Gradio HUD Interface & Event Dispatcher
+├── backend.py          # Hugging Face SigLIP Vision Model & Temperature Calibration
+├── strategy_engine.py  # Time-Series Memory, Risk Calculations & Plotly Charting
+└── requirements.txt    # System Dependencies Manifest
+File Breakdown
+
+backend.py: Ingests frames and runs inference against specialized zero-shot prompts via PyTorch and Transformers.
+strategy_engine.py: Calculates lap deltas, risk indices, compound recommendations, and renders Plotly graphs.
+app.py: Constructs the F1 Pit-Wall HUD layout using Gradio Blocks.
+
+🚀 Local Installation & Quickstart
+Prerequisites
+Python 3.10 or higher
+
+Recommended virtual environment setup
+
+Dependencies
+
+Defined in requirements.txt:
+
+transformers
+torch
+pillow
+gradio
+plotly
+protobuf
+sentencepiece
