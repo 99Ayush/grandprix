@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 from transformers import pipeline
 
-print("🏎️ Initializing Multi-Sector Vision Engine...")
+print("🏎️ Initializing Multi-Sector Vision Engine & Temperature Scaler...")
 classifier = pipeline(
     task="zero-shot-image-classification",
     model="google/siglip-base-patch16-224"
@@ -22,10 +22,13 @@ LABEL_MAP = {
     "a photo of a drying race track with a clear dry racing line": "Drying"
 }
 
-def analyze_track_frame(image: Image.Image, sector_name: str):
-    """Processes frame with Temperature-Scaled Softmax (tau=5.0) and Sector tracking."""
+def analyze_track_frame(image: Image.Image, camera_feed: str, track_temp: float = 28.5):
+    """
+    Processes optical frame using SigLIP, applying Temperature-Scaled Softmax (tau=5.0) 
+    and factoring in surface temperature parameters.
+    """
     if image is None:
-        return {"Dry": 0.25, "Damp": 0.25, "Wet": 0.25, "Drying": 0.25}, sector_name
+        return {"Dry": 0.25, "Damp": 0.25, "Wet": 0.25, "Drying": 0.25}, camera_feed
     
     results = classifier(image, candidate_labels=CANDIDATE_LABELS)
     
@@ -33,7 +36,7 @@ def analyze_track_frame(image: Image.Image, sector_name: str):
     raw_scores = [res["score"] for res in results]
     scores_tensor = torch.tensor(raw_scores)
     
-    # Temperature-Scaled Softmax (tau = 5.0)
+    # Apply Temperature-Scaled Softmax (tau = 5.0)
     normalized_probs = torch.softmax(scores_tensor * 5.0, dim=0).tolist()
     
     formatted_scores = {}
@@ -41,4 +44,8 @@ def analyze_track_frame(image: Image.Image, sector_name: str):
         clean_label = LABEL_MAP[res["label"]]
         formatted_scores[clean_label] = round(prob, 3)
         
-    return formatted_scores, sector_name
+    # Temperature heuristic: Accelerate drying line confidence if surface temp >= 30°C
+    if track_temp >= 30.0 and formatted_scores.get("Drying", 0) > 0.20:
+        formatted_scores["Drying"] = min(1.0, round(formatted_scores["Drying"] * 1.15, 3))
+        
+    return formatted_scores, camera_feed
