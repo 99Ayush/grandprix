@@ -1,7 +1,0 @@
-transformers
-torch
-pillow
-gradio
-plotly
-protobuf
-sentencepiece
