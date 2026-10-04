@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Production builds
+dist/
+**/dist/
+build/
+
+# Vite cache
+.vite/
+**/.vite/
+
+# Environment variables
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+npm-debug.log*
